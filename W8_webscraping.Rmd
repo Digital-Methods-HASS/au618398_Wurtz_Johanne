@@ -1,0 +1,81 @@
+title: "W8 practicing web scraping"
+author: "Johanne Würtz"
+date: "11/2/2020"
+output: html_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libraries}
+library(rvest)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(janitor)
+```
+
+I want to do task 2 of the week's tasks. I could not think of an interest, but I came across a website with the 500 most popular dog names and thought why not?
+
+The website can be found with the following link: https://www.puppyleaks.com/popular-dog-names/
+
+```{r }
+url <- 'https://www.puppyleaks.com/popular-dog-names/'
+url_html <- read_html(url)
+```
+
+I'm new to web scraping, so I reused Adela's code to get a better sense of what the different chunks of code can do.
+
+```{r extract the individual rows}
+whole_table <- url_html %>% 
+ html_nodes("tr") %>%
+ html_text(trim = FALSE) 
+head(whole_table)
+```
+
+```{r extract individual cells}
+whole_table <- url_html %>% 
+ html_nodes("td") %>% #en individuel celle (td)
+ html_text(trim = FALSE) 
+head(whole_table)
+```
+
+```{r extract the whole HTML table}
+whole_table <- url_html %>% 
+ html_nodes("table") %>%
+ html_table(fill = TRUE)  #str(whole_table) turns out to be a list
+```
+
+By using head() and tail() I get to look at the first and last 6 rows in the table 
+
+```{r}
+new_table <- do.call(cbind,unlist(whole_table, recursive = FALSE)) 
+head(new_table)
+tail(new_table)
+```
+
+I create a csv file with the name PopularDogNames.csv to make it easier to use the data later.
+
+```{r write csv}
+write.csv(new_table,"PopularDogNames.csv")
+```
+
+To check out the columns in the table
+
+```{r}
+colnames(new_table)
+```
+
+The table contains information about female dog names and male dog names and is sorted alphabetically.
+
+
+
+
+
+
+
+
+

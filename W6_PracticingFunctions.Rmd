@@ -1,0 +1,88 @@
+---
+title: "W6_PracticingFunctions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libraries, echo = FALSE}
+library(tidyverse)
+library(gganimate)
+library(gapminder)
+```
+
+```{r}
+unique(gapminder$year)
+head(gapminder)
+```
+
+Define a defensive function that calculates the Gross Domestic Product of a nation from the data available in the gapminder dataset. Using that function, calculate the GDP of Denmark in the following years: 1967, 1977, 1987, 1997, 2007, and 2017.
+
+The function subsets the provided data by year if the year argument isn't empty, then subsets the result by country if the country argument isn't empty. Then it calculates the GDP for whatever subset emerges from the previous two steps. The function then adds the GDP as a new column to the subsettes data and returns this as the final result.
+
+```{r}
+calcGDP <- function(dat, year=NULL, country=NULL ) {
+  if(!is.null(year)) {
+    dat <- dat[dat$year %in% year, ]
+  }
+  if(!is.null(country)) {
+    dat <- dat[dat$country %in% country,]
+  }
+  gdp<-dat$pop * dat$gdpPercap
+  
+  new<- cbind(dat, gdp=gdp)
+  return(new)
+}
+#I am now using the function above to calculate the GDP of Denmark in the years: 1967, 1977, 1987, 1997, 2007 and 2017. I do this by choosing a specific country, in this case Denmark, and the years I want to gain information from.
+
+calcGDP(gapminder, year = c(1967,1977,1987,1997,2007, 2017), country="Denmark")
+```
+
+Write a script that loops over each country in the gapminder dataset, tests whether the country starts with a ‘B’ , and print out whether the life expectancy is smaller than 50, between 50 and 70, or greater than 70.
+
+
+```{r}
+#The first step is only to choose the countries starting with the letter "B". To do this I am using the grep() function. To make sure that I only get the countries that starts with the letter "B", I use the regular expression "^[B]". 
+start_with_B_countries <- grep("^[B]", unique(gapminder$country), value=TRUE)
+for (i in start_with_B_countries){
+  mean_lifeExp <- mean(subset(gapminder, country==i)$lifeExp) #The next step is to calculate the lifeExp 
+  if (mean_lifeExp < 50){
+    cat("The life expectancy in", i, "is less than 50 \n")}
+  if (mean_lifeExp > 50 & mean_lifeExp< 70){
+    cat("The life expectancy in", i, "is between 50 and 70 \n")}
+  else if (mean_lifeExp > 70){
+    cat("The life expectancy in", i, "is greater than 70")}
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

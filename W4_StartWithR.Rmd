@@ -1,0 +1,32 @@
+---
+title: "W4_StartWithR"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1.Use R to figure out how many elements in the vector below are greater than 2.
+
+To solve the first task I start by removing all the NA values. I do this by first defining the list ’rooms’. Then I do the following where I create a new list called ’edited rooms’, where I remove all the NA values from the list ’rooms’. I remove the NA values at [!is.na (rooms)], as I here accesses all non-NA entries in ’rooms’.
+To figure out how many elements in the vector below are greater than 2, I use the following: length(edited rooms [edited rooms >2].
+```{r}
+rooms <- c (1, 2, 1, 3, 1, NA, 3, 1, 3, 2, 1, NA, 1, 8, 3, 1, 4, NA, 1, 3, 1, 2, 1 , 7, 1, NA)
+editedRooms <- rooms [!is.na (rooms)]
+length(editedRooms[editedRooms >2])
+```
+
+Answer:
+By following the above, I find that there are 8 values greater than 2 in the list.
+
+
+2.What is the result of running median() func- tion on the above ’rooms’ vector?
+
+To run the median () function I use ’editedRooms’, as we again do not want to include the NA values. I therefore use the following: median (editedRooms).
+```{r}
+median(editedRooms)
+```
+
+Answer:
+By following the above I get the number 1.5, as this is the median of the list. The median is the ’middle’ of the list in a sorted order. That is, if we get R to sort ’edited rooms’ using sort(edited rooms) we get the following order: ’1111111111122233333478’. There are a total of 22 values and therefore two middle numbers, namely 1 and 2 in place number 11 and place number 12. The median is then calculated by adding 1 and 2 and then dividing them by 2, giving 1.5.
