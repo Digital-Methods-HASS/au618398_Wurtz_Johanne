@@ -1,0 +1,148 @@
+---
+title: "HW_W5"
+Assignment: "Task 2"
+output: html_document
+author: Johanne BW
+---
+
+## Task 2: Where in the landscape are the mounds located?
+The location of settlements is usually easy to predict as humans need safety and easy access to water and food resources. These range from nearby arable soil to pasturage to trading centers. Choices regarding the mortuary realm are much harder to establish as they are guided by the social norms of the living rather than the natural environment. Some environmental conditions, however, play a role, such as intervisibility, which can be an important factor for societies that use monuments to the dead for territorial signalling. Before such specific analysis, it is, however, a good idea to get a general sense of where in the landscape are mounds located.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+In this task I am going to find the answer to the following question:
+
+## Question:
+Is there a correlation in the elevation of the burial mounds?
+
+###   Libraries:
+I simply just loaded all the libraries we used in class in case I needed them.
+```{r}
+library(raster)
+library(tidyverse)
+library(sf)
+library(ggplot2)
+library(tmap)
+library(lattice)
+library(latticeExtra)
+library(RColorBrewer)
+library(rasterVis)
+library(rgdal)
+library(rgl)
+```
+
+## Data:
+I will be using the data:
+Aster - a digital elevation model for the Kazanlak Valley with 30m resolution. 
+KAZ_mounds - a shapefile of GPS points taken on top of each mound in Kazanlak
+
+### Load the data:
+```{r}
+aster <- raster("data/Aster.tif")
+mounds <- st_read("data/KAZ_mounds.shp")
+```
+
+I start by checking the crs values of the two 'objects' to see what I am dealing with.
+
+```{r}
+st_crs(mounds)
+# The crs for mounds is WGS 84/UTM 35N
+
+crs(aster) 
+# The crs for aster is WGS84/UTM 35N
+```
+I plot aster to see what it looks like
+```{r}
+# plot aster elevations
+plot(aster)
+```
+Status: it does not look very good.
+The same thing happens as we went through in class, where a big green square fills it all. Luckily it can be fixed.The green square is due to negative values so I remove them.
+
+Fast forward to a solution. After some unsuccessful attempts, I have found a way to do this (tip - it's in the slides from W5).
+```{r}
+# removing negative values by replacing them with NA
+rclmat <- cbind(-10000,-1, NA)
+aster <- reclassify(aster, rcl = rclmat)
+
+# plot to see the new and improved aster
+plot(aster)
+```
+Status: it looks much better.
+
+The next step is to apply the mounds to the aster. By doing this I will be able to crop the aster so it fits the mounds. I am using tmap for the mapping.  
+```{r}
+# mapping the mounds on top of the aster 
+original_map <- tm_shape(aster)+
+  tm_raster()+
+  tm_shape(mounds)+
+  tm_markers(size = 0.2)+ # I had to make these smaller than the default setting as they covered the whole map
+  tm_layout(main.title = "Original map")
+
+# cropping the aster object
+aster_crop <- crop(aster, mounds)
+```
+
+```{r}
+# mapping the mounds on top of the new cropped aster
+cropped_map <- tm_shape(aster_crop)+
+  tm_raster()+
+  tm_shape(mounds)+
+  tm_markers(size = 0.2)+
+  tm_layout(main.title = "Cropped map")
+
+# plotting the maps
+tmap_arrange(original_map,cropped_map, asp = NA)
+```
+What a difference! From now on, I only use the part of the map where the burial mounds are actually located.
+
+### Elevation values
+The next step is to extract elevation values from the entire landscape and bin them in elevation categories.
+- Again, I use way described in the slides from W5
+
+```{r}
+# Extracting elevation values from the cropped aster
+aster_crop_values <- values(aster_crop)
+
+# Find max and min values to get an idea of the general location span
+max(aster_crop_values) 
+# The max value is 1302
+min(aster_crop_values) 
+# The min value is 265
+
+# Setting the breaks
+breaks = c(200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400)
+# I start at 200m above sea level and ends at 1400m above sea level because of the min and max values
+
+# plotting a histogram of the elevation values in the cropped aster to get an view of the values
+hist(aster_crop_values, breaks = breaks)
+```
+One can now see how the elevation is distributed on the various burial mounds. 
+One can already see that it is primarily the 300 to 600 meters above sea level that occur most often.
+
+The next step is to calculate the actual elevation frequencies of registered burial mounds.
+I again use the method described in the slides, but this time I'm not quite sure what exactly it all does.
+Here I mean the "dig.lab = 5" - but nonetheless, it worked.
+```{r}
+# Find elevation frequencies for the aster_crop
+elev_bins <- cut(values(aster_crop), breaks = breaks, dig.lab = 5) 
+elev_freq <- data.frame(table(elevbins))
+elev_freq
+```
+
+
+```{r}
+# Extracting the elevation for the mounds
+mounds$elevation <- raster::extract(aster_crop, mounds)
+
+# Plot the histogram
+hist(mounds$elevation, breaks = bins)
+
+# Find elevation frequency for the burial mounds
+elevbins <- cut(mounds$elevation, breaks = bins, dig.lab = 5)
+mounds_freq <- data.frame(table(elevbins))
+mounds_freq
+
+```
+Here it can be seen that all the registered burial mounds range from being at 300 to 700 meters above sea level.The burial mounds share similarities in location based on height above sea level, which can probably be related to both culture, time, location and much more.
